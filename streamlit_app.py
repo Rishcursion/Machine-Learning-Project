@@ -124,13 +124,28 @@ if submit:
 
     # Choose and apply the model
     if model_choice == "MLP for Primary Diagnosis":
-        # Predict using MLP model and map the result
-        prediction = mlp_model.predict(input_data)[0]
+        # Predict using the MLP model and get the probabilities
+        probabilities = mlp_model.predict_proba(input_data)[0]
+        prediction = (
+            probabilities.argmax()
+        )  # Extract the index of the highest probability
+
+        # Format probabilities as percentages
+        confidence_percentages = {
+            diagnosis_mapping.get(i, "Unknown"): f"{prob * 100:.2f}%"
+            for i, prob in enumerate(probabilities)
+        }
+
+        # Display results
         st.write(
             "Predicted Primary Diagnosis:", diagnosis_mapping.get(prediction, "Unknown")
         )
+        st.write("Confidence Probabilities:", confidence_percentages)
 
     elif model_choice == "Logistic Regression for Grade":
         # Predict using Logistic Regression model and map the result
         prediction = logreg_model.predict(input_data)[0]
+        confidence = logreg_model.predict_proba(input_data)
         st.write("Predicted Grade:", grade_mapping.get(prediction, "Unknown"))
+        st.write(f"Confidence Percentage(LGG): {confidence[0][0]*100:.2f}%")
+        st.write(f"Confidence Percentage(GBM): {100 - confidence[0][0]*100:.2f}%")
